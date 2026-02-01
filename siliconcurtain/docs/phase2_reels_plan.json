@@ -1,0 +1,101 @@
+{
+  "phase": 2,
+  "name": "Asset Pipeline - Instagram Reels Optimized",
+  "objective": "Build local AI inference pipeline optimized for Instagram Reels 9:16 vertical format",
+  "platform_pivot": {
+    "from": "YouTube (16:9, long-form)",
+    "to": "Instagram Reels (9:16, 15-90s short-form)",
+    "rationale": "Higher engagement rates, better affiliate monetization, lower competition"
+  },
+  "technical_specs": {
+    "video": {
+      "aspect_ratio": "9:16",
+      "resolution": "1080x1920",
+      "duration": "15-90 seconds (target 30-60s)",
+      "codec": "H.264",
+      "bitrate": "10Mbps",
+      "fps": 30,
+      "audio": "AAC 128kbps"
+    },
+    "content": {
+      "hook_time": "0-1 seconds",
+      "text_on_screen": "Required, max 5 words",
+      "caption_burn": true,
+      "transition_style": "Quick cuts 3-5s",
+      "music": "Trending audio integration"
+    }
+  },
+  "modules": {
+    "mlx_server": {
+      "location": "Mac Studio",
+      "port": 8080,
+      "models": {
+        "f5_tts": {
+          "model": "F5-TTS-v1",
+          "features": ["voice_clone", "emotion_control", "speed_0.8x_1.5x"],
+          "output": "48kHz_WAV"
+        },
+        "flux_dev": {
+          "model": "flux1-dev-Q4_K_M.gguf",
+          "resolution": "1080x1920",
+          "loras": ["finance", "storytelling", "tech"],
+          "params": {"steps": 20, "cfg": 3.5}
+        },
+        "cogvideo": {
+          "model": "CogVideoX-5B-I2V",
+          "input": "1080x1920_image",
+          "output": "720x1280_6s_video",
+          "post_process": "RIFE_2x_interpolation"
+        }
+      }
+    },
+    "post_production": {
+      "location": "Mac Mini",
+      "ffmpeg": {
+        "encoder": "h264_videotoolbox",
+        "templates": ["faceless_reels_v1", "docu_reels_v1"],
+        "effects": ["text_overlay", "ken_burns", "quick_cuts"]
+      },
+      "captions": {
+        "engine": "whisper_cpp",
+        "style": "48px_Arial_Bold_white_outline"
+      }
+    },
+    "distributor": {
+      "primary": "instagram_reels",
+      "api": "Instagram_Graph_API_v18",
+      "rate_limits": {"uploads_per_hour": 10, "api_calls": 200},
+      "caption_template": "{hook}\n\n{body}\n\n{cta}\n\n{hashtags}"
+    }
+  },
+  "testing_requirements": {
+    "unit_tests": [
+      "MLX server health endpoint < 100ms",
+      "F5-TTS voice generation < 30s for 60s audio",
+      "FLUX 9:16 generation < 45s per image",
+      "CogVideoX clip generation < 180s"
+    ],
+    "integration_tests": [
+      "End-to-end generation: text -> voice -> video",
+      "FFmpeg assembly with VideoToolbox",
+      "Instagram API upload (sandbox)"
+    ],
+    "performance_tests": [
+      "Concurrent generation: 2 video + 4 image without OOM",
+      "VRAM usage < 44GB under load",
+      "Throughput: 10 videos/hour sustained"
+    ],
+    "quality_metrics": [
+      "Audio clarity: > 90% transcription accuracy",
+      "Video quality: SSIM > 0.95 vs reference",
+      "Reels compliance: 100% pass automated checks"
+    ]
+  },
+  "success_criteria": [
+    "Generate 9:16 video from script in < 5 minutes",
+    "VRAM never exceeds 44GB during batch processing",
+    "Instagram Reels upload success rate > 95%",
+    "Audio-visual sync drift < 50ms",
+    "Automated trending audio matching accuracy > 80%"
+  ]
+}
