@@ -1,0 +1,57 @@
+# Reddit Stories Channel Configuration
+name: "Reddit Uncovered"
+platform_account_id: "${REDDIT_CHANNEL_ID}"
+
+niche_category: relationships
+target_demographic:
+  age_range: "18-35"
+  interests:
+    - reddit stories
+    - relationship advice
+    - drama
+    - human stories
+  gender_split: "60% female, 40% male"
+
+voice_config:
+  model: "f5-tts"
+  voice_id: "warm_female"
+  pitch: 1.05
+  speed: 0.98
+  emphasis: "storytelling_emotional"
+
+visual_config:
+  lora_path: "/models/loras/cozy_storytelling.safetensors"
+  color_palette:
+    - "#2d3436"  # Dark gray
+    - "#636e72"  # Medium gray
+    - "#dfe6e9"  # Light gray
+    - "#fd79a8"  # Soft pink accent
+    - "#fab1a0"  # Peach accent
+  font_family: "Merriweather"
+  thumbnail_style: "reaction_face_mosaic"
+  animation_preset: "smooth_transitions"
+
+posting_window:
+  start_hour: 18
+  end_hour: 22
+  timezone: "America/New_York"
+  best_days: ["Friday", "Saturday", "Sunday"]
+
+content_preferences:
+  video_format: "faceless"
+  average_duration: 10  # minutes
+  intro_style: "story_hook"
+  outro_style: "community_question"
+  music_genre: "lofi_storytelling"
+  b_roll_frequency: "medium"
+
+seo_settings:
+  primary_keywords:
+    - reddit stories
+    - relationship stories
+    - am i the asshole
+    - crazy reddit
+  tag_templates:
+    - "#RedditStories"
+    - "#RelationshipAdvice"
+    - "#Drama"

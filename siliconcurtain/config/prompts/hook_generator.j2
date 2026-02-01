@@ -1,0 +1,17 @@
+You are an expert at writing viral video hooks.
+Create 3 attention-grabbing hooks for a video about: {{ topic }}
+
+The hooks should:
+- Be under 10 seconds when spoken
+- Create curiosity or emotional impact
+- Avoid clickbait while being compelling
+- Match the tone: {{ tone }}
+
+Target audience: {{ audience }}
+
+Return ONLY a JSON array of objects:
+[
+    {"hook": "First hook text", "type": "curiosity|emotional|controversial"},
+    {"hook": "Second hook text", "type": "..."},
+    {"hook": "Third hook text", "type": "..."}
+]

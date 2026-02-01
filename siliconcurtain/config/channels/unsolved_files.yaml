@@ -1,0 +1,57 @@
+# Unsolved Cases Channel Configuration
+name: "The Unsolved Files"
+platform_account_id: "${MYSTERY_CHANNEL_ID}"
+
+niche_category: mystery
+target_demographic:
+  age_range: "22-45"
+  interests:
+    - true crime
+    - unsolved mysteries
+    - paranormal
+    - conspiracy theories
+  viewing_behavior: "binge_watcher"
+
+voice_config:
+  model: "f5-tts"
+  voice_id: "intriguing_female"
+  pitch: 0.98
+  speed: 0.93
+  emphasis: "suspenseful_measured"
+
+visual_config:
+  lora_path: "/models/loras/dark_mystery.safetensors"
+  color_palette:
+    - "#0d1117"  # Very dark
+    - "#161b22"  - "#30363d"  # Border
+    - "#8b949e"  # Muted text
+    - "#f85149"  # Red accent
+    - "#d29922"  - "#ffa657"  # Orange accent
+  font_family: "Oswald"
+  thumbnail_style: "dramatic_high_contrast"
+  animation_preset: "tense_buildup"
+
+posting_window:
+  start_hour: 20
+  end_hour: 23
+  timezone: "America/Chicago"
+  best_days: ["Thursday", "Friday", "Saturday"]
+
+content_preferences:
+  video_format: "faceless"
+  average_duration: 12  # minutes
+  intro_style: "intrigue_hook"
+  outro_style: "discussion_cta"
+  music_genre: "tense_atmospheric"
+  b_roll_frequency: "high"
+
+seo_settings:
+  primary_keywords:
+    - unsolved mysteries
+    - true crime
+    - unsolved cases
+    - mystery stories
+  tag_templates:
+    - "#Unsolved"
+    - "#Mystery"
+    - "#TrueCrime"

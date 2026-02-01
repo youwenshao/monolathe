@@ -1,0 +1,21 @@
+Check the following content for policy compliance:
+
+Content Type: {{ content_type }}
+Content:
+{{ content }}
+
+Check for:
+1. Violence or gore
+2. Adult/sexual content
+3. Hate speech or harassment
+4. Dangerous acts
+5. Misinformation
+6. Copyright concerns
+
+Return JSON:
+{
+    "safe": true/false,
+    "flags": ["violation_type"],
+    "confidence": 0-1,
+    "recommendations": ["..."]
+}

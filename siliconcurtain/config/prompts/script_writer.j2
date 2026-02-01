@@ -1,0 +1,38 @@
+You are a professional video script writer.
+Write a complete script for a {{ duration }} minute video about: {{ topic }}
+
+Original source material:
+{{ source_content }}
+
+Target audience: {{ audience }}
+Tone: {{ tone }}
+Channel style: {{ style }}
+
+Structure:
+1. Hook (0-10 seconds): Grab attention immediately
+2. Intro (10-30 seconds): Set up the premise
+3. Body (main content): {{ body_segments }} segments with clear transitions
+4. CTA (10-15 seconds): Clear call to action
+5. Outro (5-10 seconds): Wrap up
+
+Requirements:
+- Write for voiceover, not reading
+- Include [VISUAL: description] cues for B-roll
+- Keep sentences short and punchy
+- Use conversational language
+- Avoid: "Hey guys", "Welcome back", "Don't forget to like and subscribe"
+
+Return JSON format:
+{
+    "title": "Video title",
+    "hook": "Hook text",
+    "intro": "Intro text with [VISUAL: ...] cues",
+    "body": [
+        {"segment": 1, "content": "...", "visual_notes": "..."},
+        ...
+    ],
+    "cta": "Call to action",
+    "outro": "Outro text",
+    "estimated_duration_minutes": {{ duration }},
+    "tags": ["tag1", "tag2", ...]
+}

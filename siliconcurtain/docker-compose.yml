@@ -1,0 +1,96 @@
+version: "3.8"
+
+services:
+  # Redis for message broker and caching
+  redis:
+    image: redis:7-alpine
+    container_name: siliconcurtain-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Main API service (runs on mini)
+  api:
+    build:
+      context: .
+      dockerfile: deployments/mini/Dockerfile
+    container_name: siliconcurtain-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      - DATABASE_URL=sqlite+aiosqlite:///data/siliconcurtain.db
+      - REDIS_URL=redis://redis:6379/0
+      # Add other env vars from .env file
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+      - /Volumes/ai_content_shared:/shared:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Celery worker for background tasks (runs on mini)
+  worker:
+    build:
+      context: .
+      dockerfile: deployments/mini/Dockerfile
+    container_name: siliconcurtain-worker
+    restart: unless-stopped
+    command: celery -A src.celery_app worker --loglevel=info --concurrency=2
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - DATABASE_URL=sqlite+aiosqlite:///data/siliconcurtain.db
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+      - /Volumes/ai_content_shared:/shared
+    depends_on:
+      - redis
+      - api
+
+  # Celery beat for scheduled tasks
+  scheduler:
+    build:
+      context: .
+      dockerfile: deployments/mini/Dockerfile
+    container_name: siliconcurtain-scheduler
+    restart: unless-stopped
+    command: celery -A src.celery_app beat --loglevel=info
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - DATABASE_URL=sqlite+aiosqlite:///data/siliconcurtain.db
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - redis
+
+volumes:
+  redis_data:

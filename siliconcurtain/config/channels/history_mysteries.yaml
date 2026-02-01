@@ -1,0 +1,56 @@
+# History Mysteries Channel Configuration
+name: "History Unearthed"
+platform_account_id: "${HISTORY_CHANNEL_ID}"
+
+niche_category: history
+target_demographic:
+  age_range: "25-55"
+  interests:
+    - history
+    - mysteries
+    - ancient civilizations
+    - archaeology
+  education_level: "college educated"
+
+voice_config:
+  model: "f5-tts"
+  voice_id: "documentary_narrator"
+  pitch: 0.92
+  speed: 0.9
+  emphasis: "documentary_dramatic"
+
+visual_config:
+  lora_path: "/models/loras/historical_cinematic.safetensors"
+  color_palette:
+    - "#1a120b"  # Dark brown
+    - "#3c2a21"  # Medium brown
+    - "#d5cea3"  - "#e5e5cb"  # Parchment
+    - "#c69774"  # Bronze accent
+  font_family: "Cinzel"
+  thumbnail_style: "cinematic_atmospheric"
+  animation_preset: "cinematic_slow"
+
+posting_window:
+  start_hour: 19
+  end_hour: 21
+  timezone: "Europe/London"
+  best_days: ["Saturday", "Sunday"]
+
+content_preferences:
+  video_format: "documentary"
+  average_duration: 15  # minutes
+  intro_style: "mystery_hook"
+  outro_style: "documentary_outro"
+  music_genre: "orchestral_cinematic"
+  b_roll_frequency: "very_high"
+
+seo_settings:
+  primary_keywords:
+    - history mysteries
+    - ancient history
+    - unsolved mysteries
+    - archaeological discoveries
+  tag_templates:
+    - "#History"
+    - "#Mysteries"
+    - "#Documentary"

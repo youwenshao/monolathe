@@ -1,0 +1,22 @@
+Generate SEO-optimized metadata for a video.
+
+Video Title: {{ title }}
+Script Summary: {{ summary }}
+Target Keywords: {{ keywords | join(', ') }}
+Platform: {{ platform }}
+
+Generate:
+1. An optimized title (60 chars max, include keywords naturally)
+2. A compelling description (150-200 words, keyword-rich but natural)
+3. Tags (15 relevant tags)
+4. Category suggestion
+5. Thumbnail text ideas (3 options, max 5 words each)
+
+Return JSON:
+{
+    "optimized_title": "...",
+    "description": "...",
+    "tags": ["..."],
+    "category": "...",
+    "thumbnail_text_options": ["...", "...", "..."]
+}

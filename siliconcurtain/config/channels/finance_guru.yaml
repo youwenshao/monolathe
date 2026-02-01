@@ -1,0 +1,57 @@
+# Finance Guru Channel Configuration
+name: "Finance Daily"
+platform_account_id: "${FINANCE_CHANNEL_ID}"
+
+niche_category: finance
+target_demographic:
+  age_range: "25-45"
+  interests:
+    - personal finance
+    - investing
+    - stock market
+    - financial independence
+  income_level: "middle to upper-middle"
+
+voice_config:
+  model: "f5-tts"
+  voice_id: "professional_male"
+  pitch: 0.95
+  speed: 0.95
+  emphasis: "clear_authoritative"
+
+visual_config:
+  lora_path: "/models/loras/finance_style.safetensors"
+  color_palette:
+    - "#0a192f"  # Deep navy
+    - "#112240"  # Lighter navy
+    - "#64ffda"  # Accent teal
+    - "#ccd6f6"  # Light text
+    - "#8892b0"  # Muted text
+  font_family: "Inter"
+  thumbnail_style: "minimalist_data_driven"
+  animation_preset: "professional_slides"
+
+posting_window:
+  start_hour: 7
+  end_hour: 9
+  timezone: "America/New_York"
+  best_days: ["Tuesday", "Wednesday", "Thursday"]
+
+content_preferences:
+  video_format: "faceless"
+  average_duration: 8  # minutes
+  intro_style: "data_hook"
+  outro_style: "soft_cta"
+  music_genre: "ambient_corporate"
+  b_roll_frequency: "high"
+
+seo_settings:
+  primary_keywords:
+    - personal finance
+    - investing tips
+    - money management
+    - financial education
+  tag_templates:
+    - "#FinanceTips"
+    - "#MoneyManagement"
+    - "#Investing"

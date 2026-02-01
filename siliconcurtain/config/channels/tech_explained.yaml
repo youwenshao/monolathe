@@ -1,0 +1,57 @@
+# Tech Explained Channel Configuration
+name: "Tech Simplified"
+platform_account_id: "${TECH_CHANNEL_ID}"
+
+niche_category: technology
+target_demographic:
+  age_range: "20-40"
+  interests:
+    - technology
+    - AI
+    - gadgets
+    - software
+  tech_savviness: "beginner to intermediate"
+
+voice_config:
+  model: "f5-tts"
+  voice_id: "friendly_male"
+  pitch: 1.0
+  speed: 1.02
+  emphasis: "educational_clear"
+
+visual_config:
+  lora_path: "/models/loras/tech_modern.safetensors"
+  color_palette:
+    - "#1e1e2e"  # Dark background
+    - "#313244"  # Surface
+    - "#89b4fa"  # Blue accent
+    - "#cba6f7"  # Purple accent
+    - "#f5e0dc"  # Rose accent
+  font_family: "JetBrains Mono"
+  thumbnail_style: "tech_product_focus"
+  animation_preset: "clean_minimal"
+
+posting_window:
+  start_hour: 10
+  end_hour: 14
+  timezone: "America/Los_Angeles"
+  best_days: ["Monday", "Wednesday", "Friday"]
+
+content_preferences:
+  video_format: "faceless"
+  average_duration: 6  # minutes
+  intro_style: "question_hook"
+  outro_style: "learn_more_cta"
+  music_genre: "electronic_focus"
+  b_roll_frequency: "high"
+
+seo_settings:
+  primary_keywords:
+    - tech explained
+    - how technology works
+    - AI explained
+    - technology for beginners
+  tag_templates:
+    - "#TechExplained"
+    - "#AI"
+    - "#Technology"
