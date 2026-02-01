@@ -1,0 +1,108 @@
+{
+  "phase": 4,
+  "name": "Scale & Hardening",
+  "objective": "Production monitoring, multi-channel scale, and disaster recovery for 50+ Reels/day",
+  "duration": "Week 4",
+  "target_metrics": {
+    "throughput": "50 Reels/day sustained",
+    "channels": "5+ concurrent channels",
+    "availability": "99.5% uptime",
+    "recovery_time": "< 10 min from backup",
+    "cost_per_reel": "< $0.10 USD"
+  },
+  "modules": {
+    "monitoring": {
+      "prometheus": {
+        "metrics": [
+          "generation_duration_seconds",
+          "generation_vram_usage_gb",
+          "upload_queue_depth",
+          "upload_success_rate",
+          "instagram_api_latency",
+          "circuit_breaker_state",
+          "channel_container_count",
+          "compliance_violations_total"
+        ],
+        "histograms": [
+          "generation_time_bucket",
+          "api_response_time_bucket"
+        ],
+        "counters": [
+          "videos_generated_total",
+          "videos_uploaded_total",
+          "errors_total"
+        ],
+        "gauges": [
+          "active_jobs",
+          "vram_usage_percent",
+          "queue_wait_time_seconds"
+        ]
+      },
+      "grafana": {
+        "dashboards": [
+          "System Overview",
+          "Generation Pipeline",
+          "Upload Performance",
+          "Channel Health",
+          "Compliance Status",
+          "Cost Analysis"
+        ]
+      }
+    },
+    "logging": {
+      "infrastructure": "Loki + Grafana",
+      "log_levels": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+      "retention": "7 days",
+      "fields": [
+        "timestamp",
+        "level",
+        "service",
+        "channel_id",
+        "content_id",
+        "message",
+        "trace_id"
+      ]
+    },
+    "disaster_recovery": {
+      "backup_targets": [
+        "SQLite database",
+        "Redis RDB snapshots",
+        "Channel configurations",
+        "Generated assets (last 24h)",
+        "Model weights (LoRAs)"
+      ],
+      "schedule": "Daily at 02:00 HKT",
+      "destination": "External SSD / S3",
+      "retention": "30 days",
+      "auto_restore": true
+    },
+    "load_testing": {
+      "tool": "Locust",
+      "scenarios": [
+        "Burst: 10 concurrent generations",
+        "Sustained: 50 videos/day for 24h",
+        "Stress: Max VRAM utilization",
+        "Failover: Redis failure recovery"
+      ],
+      "success_criteria": [
+        "95th percentile generation < 5min",
+        "No OOM errors under load",
+        "Upload success > 98%",
+        "Recovery < 2min from failure"
+      ]
+    }
+  },
+  "testing_requirements": {
+    "unit": ["Metrics export format", "Backup/restore procedures"],
+    "integration": ["Prometheus scraping", "Grafana dashboards", "Log shipping"],
+    "load": ["50 videos/day simulation", "5 channel concurrent", "VRAM stress test"],
+    "chaos": ["Redis kill", "Studio network partition", "API rate limit hit"]
+  },
+  "success_criteria": [
+    "50 Reels/day sustained throughput verified",
+    "99.5% uptime over 72h",
+    "Recovery from backup < 10min",
+    "Cost per Reel < $0.10",
+    "All metrics visible in Grafana"
+  ]
+}
