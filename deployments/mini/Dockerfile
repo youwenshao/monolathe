@@ -18,9 +18,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Install Python dependencies
-COPY pyproject.toml .
+COPY pyproject.toml README.md ./
 RUN pip install --upgrade pip && \
-    pip install -e "."
+    pip install "."
 
 # Copy project
 COPY src/ ./src/
