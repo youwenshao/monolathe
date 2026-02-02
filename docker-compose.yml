@@ -38,7 +38,7 @@ services:
     volumes:
       - ./data:/app/data
       - ./config:/app/config
-      - /Volumes/ai_content_shared:/shared:ro
+      - ./shared_storage:/shared:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -67,7 +67,7 @@ services:
     volumes:
       - ./data:/app/data
       - ./config:/app/config
-      - /Volumes/ai_content_shared:/shared
+      - ./shared_storage:/shared
     depends_on:
       - redis
       - api

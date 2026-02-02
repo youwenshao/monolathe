@@ -68,7 +68,7 @@ migrate-down:
 # Deployment
 deploy-mini:
 	@echo "Deploying to Mac mini..."
-	docker-compose -f docker-compose.yml up -d --build
+	/Applications/Docker.app/Contents/Resources/cli-plugins/docker-compose -f docker-compose.yml up -d --build
 
 deploy-studio:
 	@echo "Deploying workers to Mac Studio..."
@@ -77,16 +77,16 @@ deploy-studio:
 
 # Docker commands
 docker-up:
-	docker-compose up -d
+	/Applications/Docker.app/Contents/Resources/cli-plugins/docker-compose up -d
 
 docker-down:
-	docker-compose down
+	/Applications/Docker.app/Contents/Resources/cli-plugins/docker-compose down
 
 docker-logs:
-	docker-compose logs -f
+	/Applications/Docker.app/Contents/Resources/cli-plugins/docker-compose logs -f
 
 docker-build:
-	docker-compose build --no-cache
+	/Applications/Docker.app/Contents/Resources/cli-plugins/docker-compose build --no-cache
 
 # Celery commands (for local development)
 celery-worker:
