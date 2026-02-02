@@ -1,12 +1,18 @@
 # Monolathe Makefile
-.PHONY: help install dev test lint format migrate deploy-studio deploy-mini clean
+PYTHON = /opt/homebrew/bin/python3
+VENV = .venv
+VENV_PYTHON = $(VENV)/bin/python
+VENV_PIP = $(VENV_PYTHON) -m pip
+
+.PHONY: help install dev test lint format migrate deploy-studio deploy-mini clean venv
 
 # Default target
 help:
 	@echo "Monolathe - AI Content Automation Pipeline"
 	@echo ""
 	@echo "Available targets:"
-	@echo "  install       Install dependencies"
+	@echo "  install       Install dependencies in a virtual environment"
+	@echo "  venv          Create virtual environment"
 	@echo "  dev           Run in development mode"
 	@echo "  test          Run test suite"
 	@echo "  test-cov      Run tests with coverage"
@@ -20,50 +26,55 @@ help:
 	@echo "  docker-down   Stop Docker Compose services"
 	@echo "  clean         Clean temporary files"
 
+# Virtual Environment
+venv:
+	$(PYTHON) -m venv $(VENV)
+	$(VENV_PIP) install --upgrade pip
+
 # Installation
-install:
-	pip install -e ".[dev]"
-	pre-commit install
+install: venv
+	$(VENV_PIP) install -e .
+	$(VENV_PYTHON) -m pre_commit install
 
 # Development
 dev:
-	uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+	$(VENV_PYTHON) -m uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 
 # Testing
 test:
-	pytest tests/unit -v
+	$(VENV_PYTHON) -m pytest tests/unit -v
 
 test-int:
-	pytest tests/integration -v
+	$(VENV_PYTHON) -m pytest tests/integration -v
 
 test-e2e:
-	pytest tests/e2e -v
+	$(VENV_PYTHON) -m pytest tests/e2e -v
 
 test-cov:
-	pytest --cov=src --cov-report=html --cov-report=term-missing
+	$(VENV_PYTHON) -m pytest --cov=src --cov-report=html --cov-report=term-missing
 
 test-all:
-	pytest -v --cov=src --cov-report=term-missing
+	$(VENV_PYTHON) -m pytest -v --cov=src --cov-report=term-missing
 
 # Linting and formatting
 lint:
-	ruff check src tests
-	mypy src --strict
+	$(VENV_PYTHON) -m ruff check src tests
+	$(VENV_PYTHON) -m mypy src --strict
 
 format:
-	black src tests
-	ruff check --fix src tests
+	$(VENV_PYTHON) -m black src tests
+	$(VENV_PYTHON) -m ruff check --fix src tests
 
 # Database migrations
 migrate:
-	alembic upgrade head
+	$(VENV_PYTHON) -m alembic upgrade head
 
 migrate-make:
 	@read -p "Migration message: " msg; \
-	alembic revision --autogenerate -m "$$msg"
+	$(VENV_PYTHON) -m alembic revision --autogenerate -m "$$msg"
 
 migrate-down:
-	alembic downgrade -1
+	$(VENV_PYTHON) -m alembic downgrade -1
 
 # Deployment
 deploy-mini:
@@ -90,13 +101,13 @@ docker-build:
 
 # Celery commands (for local development)
 celery-worker:
-	celery -A src.celery_app worker --loglevel=info --concurrency=2
+	$(VENV_PYTHON) -m celery -A src.celery_app worker --loglevel=info --concurrency=2
 
 celery-beat:
-	celery -A src.celery_app beat --loglevel=info
+	$(VENV_PYTHON) -m celery -A src.celery_app beat --loglevel=info
 
 celery-flower:
-	celery -A src.celery_app flower --port=5555
+	$(VENV_PYTHON) -m celery -A src.celery_app flower --port=5555
 
 # Cleaning
 clean:
@@ -105,12 +116,12 @@ clean:
 	find . -type f -name "*.pyo" -delete 2>/dev/null || true
 	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
-	rm -rf .coverage htmlcov/ .mypy_cache/ 2>/dev/null || true
+	rm -rf .coverage htmlcov/ .mypy_cache/ $(VENV) 2>/dev/null || true
 
 # Database
 db-init:
 	mkdir -p data
-	python -c "import asyncio; from src.shared.database import init_db; asyncio.run(init_db())"
+	$(VENV_PYTHON) -c "import asyncio; from src.shared.database import init_db; asyncio.run(init_db())"
 
 db-reset:
 	 rm -f data/*.db
@@ -118,16 +129,17 @@ db-reset:
 
 # Utilities
 requirements:
-	pip-compile pyproject.toml -o requirements.txt
-	pip-compile --extra dev pyproject.toml -o requirements-dev.txt
+	$(VENV_PIP) install pip-tools
+	$(VENV_PYTHON) -m piptools compile pyproject.toml -o requirements.txt
+	$(VENV_PYTHON) -m piptools compile --extra dev pyproject.toml -o requirements-dev.txt
 
 seed:
-	python scripts/seed_data.py
+	$(VENV_PYTHON) scripts/seed_data.py
 
 # Health check
 health:
-	curl -s http://localhost:8000/health | python -m json.tool
+	curl -s http://localhost:8000/health | $(VENV_PYTHON) -m json.tool
 
 # Version
 version:
-	@python -c "from src import __version__; print(__version__)"
+	@$(VENV_PYTHON) -c "from src import __version__; print(__version__)"
