@@ -1,0 +1,30 @@
+[Unit]
+Description=Monolathe Celery Worker
+After=network.target
+
+[Service]
+Type=simple
+User=studio
+Group=staff
+WorkingDirectory=/Users/studio/monolathe
+Environment=PATH=/Users/studio/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=PYTHONPATH=/Users/studio/monolathe
+Environment=REDIS_URL=redis://mini.local:6379/0
+Environment=ENVIRONMENT=production
+
+ExecStart=/Users/studio/.local/bin/celery -A src.celery_app worker \
+    --loglevel=info \
+    --concurrency=2 \
+    --hostname=studio@%h \
+    --queues=mlx_inference \
+    --prefetch-multiplier=1
+
+Restart=always
+RestartSec=10
+
+# Resource limits
+MemoryMax=48G
+CPUQuota=800%
+
+[Install]
+WantedBy=multi-user.target

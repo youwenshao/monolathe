@@ -1,1 +1,0 @@
-"""SiliconCurtain test suite."""
