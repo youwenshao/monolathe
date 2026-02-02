@@ -29,9 +29,13 @@ celery_app.conf.update(
     worker_max_tasks_per_child=50,
 )
 
-# Queue configuration
+    # Queue configuration
 celery_app.conf.task_routes = {
-    "src.assetfactory.*": {"queue": "mlx_inference"},
+    "src.assetfactory.*": {"queue": "mlx_inference_local"},
     "src.postproduction.*": {"queue": "video_render"},
     "src.distributor.*": {"queue": "upload"},
 }
+
+# Force Docker worker to pick up mlx_inference for testing
+# (Normally this would run on Studio, but we want to test the Docker worker's logic)
+

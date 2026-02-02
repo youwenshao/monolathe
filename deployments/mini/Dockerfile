@@ -19,11 +19,11 @@ WORKDIR /app
 
 # Install Python dependencies
 COPY pyproject.toml README.md ./
+COPY src/ ./src/
 RUN pip install --upgrade pip && \
     pip install "."
 
-# Copy project
-COPY src/ ./src/
+# Copy remaining project files
 COPY config/ ./config/
 COPY migrations/ ./migrations/
 COPY alembic.ini .

@@ -3,11 +3,12 @@
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
-from src.api.routers import channels, health, scripts, trends
+from src.api.routers import assets, channels, health, jobs, scripts, trends
 from src.shared.config import get_settings
 from src.shared.database import close_db, init_db
 from src.shared.logger import get_logger, setup_logging
@@ -82,6 +83,11 @@ def create_app() -> FastAPI:
     app.include_router(trends.router, prefix="/trends", tags=["TrendScout"])
     app.include_router(scripts.router, prefix="/scripts", tags=["ScriptForge"])
     app.include_router(channels.router, prefix="/channels", tags=["Channels"])
+    app.include_router(assets.router, prefix="/assets", tags=["Assets"])
+    app.include_router(jobs.router, prefix="/jobs", tags=["Jobs"])
+    
+    # Static files for asset viewing
+    app.mount("/shared", StaticFiles(directory="/shared"), name="shared")
     
     # Exception handlers
     @app.exception_handler(Exception)

@@ -33,21 +33,26 @@ class ReelsAssembler:
         self._verify_ffmpeg()
     
     def _verify_ffmpeg(self) -> None:
-        """Verify FFmpeg installation and VideoToolbox support."""
+        """Verify FFmpeg installation and log capabilities."""
         try:
-            result = subprocess.run(
-                ["ffmpeg", "-version"],
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            if "videotoolbox" not in result.stdout.lower():
-                logger.warning("FFmpeg built without VideoToolbox support")
+            caps = self._get_ffmpeg_caps()
+            if "videotoolbox" not in caps:
+                logger.info("FFmpeg will use software encoding (libx264)")
             else:
                 logger.info("FFmpeg with VideoToolbox verified")
         except (subprocess.CalledProcessError, FileNotFoundError) as e:
             logger.error(f"FFmpeg verification failed: {e}")
             raise RuntimeError("FFmpeg not properly installed")
+    
+    def _get_ffmpeg_caps(self) -> str:
+        """Get FFmpeg capabilities string."""
+        result = subprocess.run(
+            ["ffmpeg", "-version"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return result.stdout.lower()
     
     def _build_ffmpeg_command(
         self,
@@ -105,10 +110,20 @@ class ReelsAssembler:
         if audio_inputs:
             cmd.extend(["-map", "[outa]"])
         
-        # Video encoding with VideoToolbox
+        # Video encoding
+        if "videotoolbox" in self._get_ffmpeg_caps():
+            cmd.extend([
+                "-c:v", "h264_videotoolbox",
+                "-b:v", self.specs.video_bitrate,
+            ])
+        else:
+            cmd.extend([
+                "-c:v", "libx264",
+                "-preset", "veryfast",
+                "-crf", "23",
+            ])
+        
         cmd.extend([
-            "-c:v", "h264_videotoolbox",
-            "-b:v", self.specs.video_bitrate,
             "-r", str(self.specs.fps),
             "-pix_fmt", "yuv420p",
             "-tag:v", "avc1",
@@ -179,11 +194,24 @@ class ReelsAssembler:
             "ffmpeg", "-y",
             "-i", video_path,
             "-vf", ",".join(filters),
-            "-c:v", "h264_videotoolbox",
-            "-b:v", self.specs.video_bitrate,
+        ]
+        
+        if "videotoolbox" in self._get_ffmpeg_caps():
+            cmd.extend([
+                "-c:v", "h264_videotoolbox",
+                "-b:v", self.specs.video_bitrate,
+            ])
+        else:
+            cmd.extend([
+                "-c:v", "libx264",
+                "-preset", "veryfast",
+                "-crf", "23",
+            ])
+            
+        cmd.extend([
             "-c:a", "copy",
             output_path,
-        ]
+        ])
         
         try:
             subprocess.run(cmd, check=True, capture_output=True, text=True)
@@ -228,11 +256,24 @@ class ReelsAssembler:
             "ffmpeg", "-y",
             "-i", video_path,
             "-vf", f"ass={ass_path}",
-            "-c:v", "h264_videotoolbox",
-            "-b:v", self.specs.video_bitrate,
+        ]
+        
+        if "videotoolbox" in self._get_ffmpeg_caps():
+            cmd.extend([
+                "-c:v", "h264_videotoolbox",
+                "-b:v", self.specs.video_bitrate,
+            ])
+        else:
+            cmd.extend([
+                "-c:v", "libx264",
+                "-preset", "veryfast",
+                "-crf", "23",
+            ])
+            
+        cmd.extend([
             "-c:a", "copy",
             output_path,
-        ]
+        ])
         
         try:
             subprocess.run(cmd, check=True, capture_output=True, text=True)
@@ -323,19 +364,27 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             "ffmpeg", "-y",
             "-loop", "1",
             "-i", image_path,
-            "-vf", (
-                f"zoompan=z='min(zoom+0.0015,{zoom_end})':"
-                f"d={int(duration * self.specs.fps)}:"
-                f"s={self.specs.width}x{self.specs.height}:"
-                f"fps={self.specs.fps}",
-            ),
-            "-c:v", "h264_videotoolbox",
-            "-b:v", self.specs.video_bitrate,
+            "-vf", f"zoompan=z='min(zoom+0.0015,{zoom_end})':d={int(duration * self.specs.fps)}:s={self.specs.width}x{self.specs.height}:fps={self.specs.fps}",
+        ]
+        
+        if "videotoolbox" in self._get_ffmpeg_caps():
+            cmd.extend([
+                "-c:v", "h264_videotoolbox",
+                "-b:v", self.specs.video_bitrate,
+            ])
+        else:
+            cmd.extend([
+                "-c:v", "libx264",
+                "-preset", "veryfast",
+                "-crf", "23",
+            ])
+            
+        cmd.extend([
             "-r", str(self.specs.fps),
             "-t", str(duration),
             "-pix_fmt", "yuv420p",
             output_path,
-        ]
+        ])
         
         try:
             subprocess.run(cmd, check=True, capture_output=True, text=True)
@@ -362,6 +411,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             Assembly metadata
         """
         logger.info(f"Assembling Reel: {script.title}")
+        logger.info(f"Assets: {assets}")
         
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -370,12 +420,14 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             # Process each segment
             for i, segment in enumerate(script.body):
                 segment_path = temp_path / f"segment_{i:03d}.mp4"
+                logger.info(f"Processing segment {i}: {segment.content[:30]}...")
                 
                 # Determine source
                 if segment.visual_notes and "b_roll" in segment.visual_notes:
                     # Use B-roll video or image with Ken Burns
                     b_roll = assets.get("b_roll", [])
                     if b_roll:
+                        logger.info(f"Applying Ken Burns to B-roll for segment {i}")
                         # Apply Ken Burns to first B-roll image
                         self.apply_ken_burns(
                             b_roll[0],
@@ -385,11 +437,13 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 else:
                     # Use generated video or static with effect
                     if "video_path" in assets:
+                        logger.info(f"Using video_path for segment {i}")
                         segment_path = Path(assets["video_path"])
                     else:
                         # Create from static image
                         img_path = assets.get("main_image", "")
                         if img_path:
+                            logger.info(f"Applying Ken Burns to main_image for segment {i}")
                             self.apply_ken_burns(
                                 img_path,
                                 segment.duration_seconds or 3.0,
@@ -397,10 +451,17 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                             )
                 
                 if segment_path.exists():
+                    logger.info(f"Segment {i} file created: {segment_path}")
                     segment_files.append({
                         "path": str(segment_path),
                         "has_audio": True,
                     })
+                else:
+                    logger.warning(f"Segment {i} file NOT created: {segment_path}")
+            
+            if not segment_files:
+                logger.error("No segments were created!")
+                raise RuntimeError("No segments were created during assembly")
             
             # Concatenate segments
             concat_list = temp_path / "concat.txt"
@@ -409,6 +470,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                     f.write(f"file '{seg['path']}'\n")
             
             temp_output = temp_path / "assembled.mp4"
+            logger.info(f"Concatenating {len(segment_files)} segments...")
             
             cmd = [
                 "ffmpeg", "-y",
@@ -420,6 +482,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             ]
             
             subprocess.run(cmd, check=True, capture_output=True)
+            logger.info("Concatenation complete")
             
             # Add text overlays
             if script.body and script.body[0].text_cards:

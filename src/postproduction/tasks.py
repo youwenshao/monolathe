@@ -1,5 +1,8 @@
 """Celery tasks for video post-production."""
 
+import subprocess
+import tempfile
+from pathlib import Path
 from typing import Any
 
 from src.celery_app import celery_app
@@ -28,23 +31,55 @@ def assemble_video(
     try:
         logger.info(f"Assembling video: {script.get('title', 'Untitled')}")
         
-        # TODO: Implement FFmpeg assembly
-        # - Load template configuration
-        # - Add voiceover audio
-        # - Insert B-roll clips at timestamps
-        # - Burn subtitles
-        # - Apply transitions
-        # - Encode with VideoToolbox
+        from src.postproduction.reels_assembler import ReelsAssembler
+        from src.shared.models_reels import ReelsVideoScript, ReelsScriptSegment
+        from src.shared.models import VideoScript
+        
+        # Ensure output directory exists
+        output_dir = Path("/shared/output")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        output_path = "/shared/output/final_video.mp4"
+        
+        # Convert dict or VideoScript to ReelsVideoScript if needed
+        if isinstance(script, dict):
+            body = []
+            for s in script.get("body", []):
+                if isinstance(s, dict):
+                    body.append(ReelsScriptSegment(**s))
+                else:
+                    body.append(s)
+            
+            reels_script = ReelsVideoScript(
+                title=script.get("title", "Untitled"),
+                hook=script.get("hook", ""),
+                intro=script.get("intro", ""),
+                body=body,
+                cta=script.get("cta", ""),
+            )
+        elif isinstance(script, VideoScript):
+            reels_script = ReelsVideoScript(
+                title=script.title,
+                hook=script.hook,
+                intro=script.intro,
+                body=[ReelsScriptSegment(content=s.content, duration_seconds=s.duration_seconds or 3.0, visual_notes=s.visual_notes) for s in script.body],
+                cta=script.cta,
+            )
+        else:
+            reels_script = script
+
+        assembler = ReelsAssembler()
+        result = assembler.assemble_reel(reels_script, assets, output_path)
         
         return {
             "status": "success",
-            "video_path": "/shared/output/final_video.mp4",
-            "duration": script.get("estimated_duration", 180),
-            "resolution": "1080p",
-            "bitrate": "8Mbps",
+            "video_path": output_path,
+            "duration": result.get("duration_seconds", 0),
+            "resolution": result.get("resolution", "1080x1920"),
+            "file_size": result.get("file_size_bytes", 0),
         }
     except Exception as exc:
-        logger.error(f"Video assembly failed: {exc}")
+        logger.error(f"Video assembly failed: {exc}", exc_info=True)
         raise self.retry(exc=exc, countdown=120)
 
 

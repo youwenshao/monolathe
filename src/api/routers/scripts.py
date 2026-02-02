@@ -78,7 +78,7 @@ async def generate_script(request: ScriptGenerateRequest) -> ScriptGenerateRespo
             async with get_session() as session:
                 content = ScheduledContentORM(
                     channel_id=request.channel_id,
-                    script_json=script.model_dump(),
+                    script_json=script.model_dump(mode="json"),
                     status="drafted",
                 )
                 session.add(content)

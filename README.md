@@ -268,36 +268,64 @@ The API runs on `http://mini.local:8000`. Key endpoints:
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/health` | GET | Health check and system status |
-| `/api/v1/trends` | GET | Fetch current trending topics |
-| `/api/v1/scripts` | POST | Generate a video script |
-| `/api/v1/assets/generate` | POST | Queue asset generation (voice, image, video) |
-| `/api/v1/channels` | GET | List configured channels |
-| `/api/v1/calendar` | GET | View content calendar |
+| `/trends` | GET | Fetch current trending topics |
+| `/scripts/generate` | POST | Generate a video script |
+| `/assets/generate` | POST | Queue asset generation (voice, image, video) |
+| `/assets/assemble` | POST | Queue final video assembly |
+| `/jobs/{job_id}` | GET | Check background job status |
+| `/shared/{path}` | GET | View/Download generated assets and videos |
+| `/channels` | GET | List configured channels |
+| `/calendar` | GET | View content calendar |
 
 ### Example Workflow
 
 1. **Fetch Trends**
    ```bash
-   curl http://mini.local:8000/api/v1/trends?niche=technology
+   curl "http://mini.local:8000/trends?niche=technology"
    ```
 
 2. **Generate a Script**
    ```bash
-   curl -X POST http://mini.local:8000/api/v1/scripts \
+   curl -X POST "http://mini.local:8000/scripts/generate" \
      -H "Content-Type: application/json" \
-     -d '{"trend_id": "uuid-here", "channel_id": "tech-channel-1"}'
+     -d '{
+       "topic": "The Future of AI in 2026",
+       "source_material": "Artificial intelligence is evolving rapidly with agentic workflows and multi-modal models becoming the standard for productivity.",
+       "niche": "technology",
+       "channel_id": "tech-channel-1"
+     }'
    ```
 
 3. **Generate Assets** (queued to Mac Studio)
    ```bash
-   curl -X POST http://mini.local:8000/api/v1/assets/generate \
+   curl -X POST "http://localhost:8000/assets/generate" \
      -H "Content-Type: application/json" \
-     -d '{"script_id": "uuid-here", "asset_types": ["voice", "images"]}'
+     -d '{"script_id": "00000000-0000-0000-0000-000000000000", "asset_types": ["voice", "images"]}'
    ```
 
-4. **Check Job Status**
+4. **Assemble Final Video**
    ```bash
-   curl http://mini.local:8000/api/v1/jobs/{job_id}
+   curl -X POST "http://mini.local:8000/assets/assemble" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "content_id": "uuid-here",
+       "assets": {
+         "voice_path": "/shared/audio/voice_001.wav",
+         "image_paths": ["/shared/images/gen_001.png"]
+       },
+       "template": "faceless_v1"
+     }'
+   ```
+
+5. **Check Job Status**
+   ```bash
+   curl "http://mini.local:8000/jobs/uuid-here"
+   ```
+
+6. **View Generated Video**
+   Once the assembly job is `SUCCESS`, you can view the video in your browser:
+   ```bash
+   curl -I "http://localhost:8000/shared/output/final_video.mp4"
    ```
 
 ### Monitoring
