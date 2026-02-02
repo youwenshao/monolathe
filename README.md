@@ -43,7 +43,7 @@ graph TB
     end
     
     subgraph "External APIs"
-        DS[DeepSeek V3<br/>SiliconFlow]
+        DS[DeepSeek V3]
         YT[YouTube Data API]
         IG[Instagram Graph API]
     end
@@ -224,9 +224,9 @@ DATABASE_URL=sqlite+aiosqlite:///data/monolathe.db
 # Redis
 REDIS_URL=redis://localhost:6379/0
 
-# DeepSeek API (SiliconFlow)
+# DeepSeek API
 DEEPSEEK_API_KEY=sk-...
-DEEPSEEK_BASE_URL=https://api.siliconflow.cn/v1
+DEEPSEEK_BASE_URL=https://api.deepseek.com
 
 # Local LLM
 OLLAMA_BASE_URL=http://studio.local:11434
@@ -329,6 +329,5 @@ This project is for educational purposes. Users are responsible for:
 ## 🙏 Acknowledgments
 
 - [DeepSeek](https://deepseek.ai/) for affordable API access
-- [SiliconFlow](https://siliconflow.cn/) for HK infrastructure
 - [MLX](https://github.com/ml-explore/mlx) for local inference
 - [FastAPI](https://fastapi.tiangolo.com/) for the web framework

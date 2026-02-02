@@ -31,10 +31,10 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     redis_max_connections: int = 50
 
-    # DeepSeek API (SiliconFlow)
+    # DeepSeek API
     deepseek_api_key: str = Field(default="", alias="DEEPSEEK_API_KEY")
-    deepseek_base_url: str = "https://api.siliconflow.cn/v1"
-    deepseek_model: str = "deepseek-ai/DeepSeek-V3"
+    deepseek_base_url: str = "https://api.deepseek.com"
+    deepseek_model: str = "deepseek-chat"
     deepseek_timeout: float = 30.0
     deepseek_max_retries: int = 3
 

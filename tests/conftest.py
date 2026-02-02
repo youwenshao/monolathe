@@ -146,7 +146,7 @@ def mock_deepseek_response() -> dict[str, Any]:
         "id": "chatcmpl-test",
         "object": "chat.completion",
         "created": 1704067200,
-        "model": "deepseek-ai/DeepSeek-V3",
+        "model": "deepseek-chat",
         "choices": [
             {
                 "index": 0,

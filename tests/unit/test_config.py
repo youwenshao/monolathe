@@ -16,8 +16,8 @@ class TestSettings:
         assert settings.environment == "development"
         assert settings.debug is False
         assert settings.log_level == "INFO"
-        assert settings.deepseek_base_url == "https://api.siliconflow.cn/v1"
-        assert settings.deepseek_model == "deepseek-ai/DeepSeek-V3"
+        assert settings.deepseek_base_url == "https://api.deepseek.com"
+        assert settings.deepseek_model == "deepseek-chat"
     
     def test_is_production(self):
         """Test production environment detection."""
