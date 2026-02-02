@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.monolathe.worker</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>__MONOLATHE_DIR__/.venv/bin/celery</string>
+        <string>-A</string>
+        <string>src.celery_app</string>
+        <string>worker</string>
+        <string>--loglevel=info</string>
+        <string>--concurrency=2</string>
+        <string>-Q</string>
+        <string>mlx_inference</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>__MONOLATHE_DIR__</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PYTHONPATH</key>
+        <string>__MONOLATHE_DIR__</string>
+        <key>REDIS_URL</key>
+        <string>redis://mini.local:6379/0</string>
+        <key>SHARED_STORAGE_PATH</key>
+        <string>/Volumes/ai_content_shared</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+
+    <key>StandardOutPath</key>
+    <string>__MONOLATHE_DIR__/logs/worker.out.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>__MONOLATHE_DIR__/logs/worker.err.log</string>
+</dict>
+</plist>

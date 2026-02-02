@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.monolathe.mlx</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>__MONOLATHE_DIR__/.venv/bin/python</string>
+        <string>-m</string>
+        <string>uvicorn</string>
+        <string>src.assetfactory.mlx_server:app</string>
+        <string>--host</string>
+        <string>0.0.0.0</string>
+        <string>--port</string>
+        <string>8080</string>
+        <string>--workers</string>
+        <string>1</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>__MONOLATHE_DIR__</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PYTHONPATH</key>
+        <string>__MONOLATHE_DIR__</string>
+        <key>MAX_VRAM_USAGE_GB</key>
+        <string>44</string>
+        <key>MAX_CONCURRENT_VIDEO_GENS</key>
+        <string>2</string>
+        <key>MAX_CONCURRENT_IMAGE_GENS</key>
+        <string>4</string>
+        <key>SHARED_STORAGE_PATH</key>
+        <string>/Volumes/ai_content_shared</string>
+        <key>REDIS_URL</key>
+        <string>redis://mini.local:6379/0</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+
+    <key>StandardOutPath</key>
+    <string>__MONOLATHE_DIR__/logs/mlx_server.out.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>__MONOLATHE_DIR__/logs/mlx_server.err.log</string>
+</dict>
+</plist>

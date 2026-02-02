@@ -79,25 +79,25 @@ migrate-down:
 # Deployment
 deploy-mini:
 	@echo "Deploying to Mac mini..."
-	/Applications/Docker.app/Contents/Resources/cli-plugins/docker-compose -f docker-compose.yml up -d --build
+	docker compose -f docker-compose.yml up -d --build
 
 deploy-studio:
 	@echo "Deploying workers to Mac Studio..."
 	scp -r src deployments/studio/ studio.local:~/monolathe/
-	ssh studio.local "cd ~/monolathe && ./install_service.sh"
+	ssh studio.local "cd ~/monolathe/deployments/studio && ./install_service.sh"
 
 # Docker commands
 docker-up:
-	/Applications/Docker.app/Contents/Resources/cli-plugins/docker-compose up -d
+	docker compose up -d
 
 docker-down:
-	/Applications/Docker.app/Contents/Resources/cli-plugins/docker-compose down
+	docker compose down
 
 docker-logs:
-	/Applications/Docker.app/Contents/Resources/cli-plugins/docker-compose logs -f
+	docker compose logs -f
 
 docker-build:
-	/Applications/Docker.app/Contents/Resources/cli-plugins/docker-compose build --no-cache
+	docker compose build --no-cache
 
 # Celery commands (for local development)
 celery-worker:

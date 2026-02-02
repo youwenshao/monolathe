@@ -101,10 +101,14 @@ monolathe/
 │   ├── prompts/               # Jinja2 prompt templates
 │   └── channels/              # Channel persona configs
 ├── migrations/                # Alembic migrations
+├── scripts/
+│   ├── setup_mini.sh          # Quickstart script for Mac mini
+│   └── setup_studio.sh        # Quickstart script for Mac Studio
 ├── deployments/
-│   ├── mini/                  # Docker, systemd for Mini
-│   └── studio/                # systemd for Studio
-├── docker-compose.yml         # Mini services orchestration
+│   ├── mini/                  # Dockerfile for Mac mini
+│   ├── studio/                # launchd plists for Mac Studio
+│   └── monitoring/            # Prometheus/Grafana stack
+├── docker-compose.yml         # Mac mini services orchestration
 ├── Makefile                   # Development commands
 ├── pyproject.toml            # Python dependencies
 └── README.md                 # This file
@@ -114,20 +118,87 @@ monolathe/
 
 ### Prerequisites
 
-- Python 3.12+
-- Redis 7+
-- FFmpeg (with VideoToolbox on macOS)
-- Docker & Docker Compose (for deployment)
+| Requirement | Mac mini | Mac Studio |
+|-------------|----------|------------|
+| macOS | 14.0+ (Sonoma) | 14.0+ (Sonoma) |
+| Python | 3.12+ | 3.12+ |
+| Homebrew | Required | Required |
+| Docker Desktop | Required | Not required |
+| Apple Silicon | M4 (recommended) | M4 Max (48GB+ recommended) |
 
-### Installation
+**Network Requirements:**
+- Both machines on the same local network
+- Hostnames configured: `mini.local` and `studio.local` (or use IP addresses)
+- Optional: Thunderbolt 4 bridge for high-bandwidth shared storage
+
+### Quickstart Setup
+
+We provide automated setup scripts for both machines. Run these in order:
+
+#### Step 1: Clone the Repository (Both Machines)
 
 ```bash
-# Clone repository
 git clone https://github.com/yourusername/monolathe.git
 cd monolathe
+```
+
+#### Step 2: Mac mini Setup (Orchestration Node)
+
+The Mac mini runs the API, Redis, and task scheduling. Run the setup script:
+
+```bash
+./scripts/setup_mini.sh
+```
+
+This script will:
+1. Verify prerequisites (Homebrew, Python, Docker)
+2. Create a Python virtual environment
+3. Install dependencies
+4. Create `.env` from template (edit with your API keys!)
+5. Initialize the database
+6. Start Docker services (Redis, API, Celery workers)
+
+**After setup, verify:**
+```bash
+curl http://localhost:8000/health
+docker compose ps
+```
+
+#### Step 3: Mac Studio Setup (Inference Node)
+
+The Mac Studio runs the MLX inference server for AI generation. Run the setup script:
+
+```bash
+./scripts/setup_studio.sh
+```
+
+This script will:
+1. Verify prerequisites (Homebrew, Python, Apple Silicon)
+2. Check connectivity to Mac mini
+3. Create a Python virtual environment
+4. Install dependencies including MLX
+5. Install launchd services for auto-start
+6. Start the MLX Inference Server
+
+**After setup, verify:**
+```bash
+curl http://localhost:8080/health
+launchctl list | grep monolathe
+```
+
+### Manual Installation (Alternative)
+
+If you prefer manual setup, follow these steps:
+
+#### Mac mini
+
+```bash
+# Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
 
 # Install dependencies
-make install
+pip install -e "."
 
 # Setup environment
 cp .env.example .env
@@ -135,19 +206,45 @@ cp .env.example .env
 
 # Initialize database
 make db-init
-
-# Run migrations
 make migrate
+
+# Start Docker services
+docker compose up -d --build
 ```
 
-### Development
+#### Mac Studio
+
+```bash
+# Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install -e "."
+pip install mlx mlx-lm uvicorn celery
+
+# Setup environment (point Redis to Mac mini)
+cp .env.example .env
+# Edit .env: REDIS_URL=redis://mini.local:6379/0
+
+# Install launchd services
+cd deployments/studio
+./install_service.sh
+```
+
+### Development Mode
+
+For local development on a single machine:
 
 ```bash
 # Start Redis
 docker run -d -p 6379:6379 redis:7-alpine
 
-# Run in development mode
+# Run API in development mode
 make dev
+
+# In another terminal, run Celery worker
+make celery-worker
 
 # Run tests
 make test
@@ -158,31 +255,105 @@ make lint
 make format
 ```
 
-### Docker Deployment (Mac Mini)
+---
+
+## 🎮 Using the Pipeline
+
+Once both machines are set up, you can use the pipeline through the API or CLI.
+
+### API Endpoints
+
+The API runs on `http://mini.local:8000`. Key endpoints:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Health check and system status |
+| `/api/v1/trends` | GET | Fetch current trending topics |
+| `/api/v1/scripts` | POST | Generate a video script |
+| `/api/v1/assets/generate` | POST | Queue asset generation (voice, image, video) |
+| `/api/v1/channels` | GET | List configured channels |
+| `/api/v1/calendar` | GET | View content calendar |
+
+### Example Workflow
+
+1. **Fetch Trends**
+   ```bash
+   curl http://mini.local:8000/api/v1/trends?niche=technology
+   ```
+
+2. **Generate a Script**
+   ```bash
+   curl -X POST http://mini.local:8000/api/v1/scripts \
+     -H "Content-Type: application/json" \
+     -d '{"trend_id": "uuid-here", "channel_id": "tech-channel-1"}'
+   ```
+
+3. **Generate Assets** (queued to Mac Studio)
+   ```bash
+   curl -X POST http://mini.local:8000/api/v1/assets/generate \
+     -H "Content-Type: application/json" \
+     -d '{"script_id": "uuid-here", "asset_types": ["voice", "images"]}'
+   ```
+
+4. **Check Job Status**
+   ```bash
+   curl http://mini.local:8000/api/v1/jobs/{job_id}
+   ```
+
+### Monitoring
 
 ```bash
-# Build and start all services
-docker-compose up -d
+# Mac mini: View Docker logs
+docker compose logs -f
 
-# View logs
-docker-compose logs -f
+# Mac mini: API health
+curl http://mini.local:8000/health
+
+# Mac Studio: View MLX logs
+tail -f ~/monolathe/logs/mlx_server.err.log
+
+# Mac Studio: Check services
+launchctl list | grep monolathe
+```
+
+### Service Management
+
+**Mac mini (Docker):**
+```bash
+docker compose ps          # Check status
+docker compose logs -f     # View logs
+docker compose restart     # Restart all services
+docker compose down        # Stop all services
+docker compose up -d       # Start all services
+```
+
+**Mac Studio (launchd):**
+```bash
+# Check status
+launchctl list | grep monolathe
 
 # Stop services
-docker-compose down
+launchctl unload ~/Library/LaunchAgents/com.monolathe.mlx.plist
+launchctl unload ~/Library/LaunchAgents/com.monolathe.worker.plist
+
+# Start services
+launchctl load ~/Library/LaunchAgents/com.monolathe.mlx.plist
+launchctl load ~/Library/LaunchAgents/com.monolathe.worker.plist
+
+# View logs
+tail -f ~/monolathe/logs/mlx_server.out.log
+tail -f ~/monolathe/logs/worker.out.log
 ```
 
-### Mac Studio Workers
+### Troubleshooting
 
-```bash
-# Copy deployment files
-scp -r deployments/studio/ studio.local:~/monolathe/
-
-# Install systemd service
-ssh studio.local "cd ~/monolathe && ./install_service.sh"
-
-# Check status
-ssh studio.local "sudo systemctl status monolathe-worker"
-```
+| Problem | Solution |
+|---------|----------|
+| `docker compose: command not found` | Update Docker Desktop to latest version |
+| Mac Studio can't reach Redis | Verify Mac mini is running: `ping mini.local` |
+| MLX Server won't start | Check logs: `tail -f ~/monolathe/logs/mlx_server.err.log` |
+| API returns 500 errors | Check Docker logs: `docker compose logs api` |
+| Services don't auto-start | Verify launchd: `launchctl list \| grep monolathe` |
 
 ## 📊 Data Models
 
