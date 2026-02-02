@@ -1,6 +1,7 @@
 """Tests for circuit breaker implementation."""
 
 import asyncio
+import time
 from unittest.mock import AsyncMock
 
 import pytest
@@ -71,7 +72,7 @@ class TestCircuitBreaker:
         """Test that open circuit rejects calls."""
         # Manually open the circuit
         breaker._state = CircuitState.OPEN
-        breaker._last_failure_time = asyncio.get_event_loop().time()
+        breaker._last_failure_time = time.time()
         
         async def any_func():
             return "should not run"
@@ -84,7 +85,7 @@ class TestCircuitBreaker:
         """Test transition to HALF_OPEN after timeout."""
         # Open the circuit
         breaker._state = CircuitState.OPEN
-        breaker._last_failure_time = asyncio.get_event_loop().time() - 2.0
+        breaker._last_failure_time = time.time() - 2.0
         
         # Set short recovery timeout for test
         breaker.recovery_timeout = 1.0

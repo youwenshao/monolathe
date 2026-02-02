@@ -21,6 +21,8 @@ class TestPromptManager:
     
     def test_get_template_creates_default(self, prompt_manager):
         """Test that default templates are created if missing."""
+        # Ensure prompts directory exists
+        prompt_manager.prompts_dir.mkdir(parents=True, exist_ok=True)
         template = prompt_manager.get_template("hook_generator")
         
         assert template is not None

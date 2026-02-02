@@ -182,7 +182,11 @@ Return JSON:
         """
         template = self.get_template(template_name)
         rendered = template.render(**kwargs)
-        version_hash = self._get_template_hash(template.source + str(kwargs))
+        
+        # Get template source for hashing
+        with open(template.filename, "r") as f:
+            source = f.read()
+        version_hash = self._get_template_hash(source + str(kwargs))
         
         return rendered, version_hash
 
